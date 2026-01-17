@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification</title>
+</head>
+
+<body>
+    <div
+        style="max-width: 500px; margin: 0 auto; padding: 20px;display: flex; flex-direction: column; text-align: center; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; border: 1px solid #e5e7eb; border-radius: 12px; color: #374151; line-height: 1.5;">
+        <h1 style="margin: 0px; padding: 0px; color: #6d28d9; font-size: 32px; font-weight: 700;">
+            Bero Talker
+        </h1>
+        <p style="font-size: 14px; color: #6b7280;">
+            <b>Hello,</b> You requested to reset your password. <br> Please use the following verification code to
+            proceed:
+        </p>
+        <div
+            style="width: fit-content; margin: 0 auto; padding: 10px 20px; background-color: #f9fafb; border-radius: 10px; border: 1px dashed #d1d5db;">
+            <span style="display: block; letter-spacing: 5px; font-size: 24px; font-weight: 700; color: #111827;">
+                {{ code }}
+            </span>
+        </div>
+        <p style="font-size: 14px; color: #6b7280;">
+            This code is valid for <b>15 minutes</b>. <br> If you didn't request this, please ignore this email safely.
+        </p>
+        <hr style="margin: 10px 0; border: none; border-top: 1px solid #e5e7eb;" />
+        <p style="font-size: 12px; color: #9ca3af;">
+            &copy; 2026 Bero Talker Inc. <br>
+            Your privacy and security are our top priority.
+        </p>
+    </div>
+</body>
+
+</html>

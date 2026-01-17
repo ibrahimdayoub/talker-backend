@@ -1,0 +1,99 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  AUDIO
+}
+
+model User {
+  id           Int              @id @default(autoincrement())
+  username     String           @unique
+  email        String           @unique
+  password     String
+  avatar       String?
+  bio          String?
+  isOnline     Boolean          @default(false)
+  lastSeen     DateTime         @default(now())
+
+  hashedRt     String?
+
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  resetCodes   PasswordReset[]
+  participants Participant[]
+  messages     Message[]
+}
+
+model PasswordReset {
+  id        Int       @id @default(autoincrement())
+  code      String
+  email     String
+  expiresAt DateTime
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+}
+
+model Conversation {
+  id            Int            @id @default(autoincrement())
+  name          String?
+  isGroup       Boolean        @default(false)
+
+  lastMessageId Int?           @unique // ID لآخر رسالة
+  lastMessage   Message?      @relation("LastMessage", fields: [lastMessageId], references: [id])
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  participants  Participant[]
+  messages      Message[]
+}
+
+model Participant {
+  id             Int           @id @default(autoincrement())
+  isAdmin        Boolean       @default(false)
+  joinedAt       DateTime      @default(now())
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  userId         Int
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Constraint: A user can't be in the same conversation twice
+  @@unique([userId, conversationId])
+}
+
+model Message {
+  id                 Int            @id @default(autoincrement())
+  content            String
+  isDeleted          Boolean        @default(false)
+  type               MessageType    @default(TEXT) // To support images/files later
+  isRead             Boolean        @default(false) // For read receipts
+
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  userId             Int
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  conversationId     Int
+  conversation       Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  lastInConversation Conversation? @relation("LastMessage")
+}
