@@ -10,8 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { ApiBearerAuth } from '@nestjs/swagger'
+import { GetUser } from '../utils/get-user.decorator'
 import { JwtStrategy } from '../security/jwt.strategy'
-import { GetUser } from '../auth/decorator/get-user.decorator'
 import { MessageService } from './message.service'
 
 @ApiBearerAuth()

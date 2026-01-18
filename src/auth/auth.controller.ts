@@ -18,9 +18,9 @@ import {
   ApiUnauthorizedResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger'
+import { GetUser } from '../utils/get-user.decorator'
 import { JwtGuard } from '../security/jwt.guard'
 import { RtGuard } from '../security/rt.guard'
-import { GetUser } from './decorator/get-user.decorator'
 import { AuthService } from './auth.service'
 import {
   SignupDto,

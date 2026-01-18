@@ -1,27 +1,25 @@
 import { Logger, ValidationPipe } from '@nestjs/common'
 import { HttpAdapterHost, NestFactory } from '@nestjs/core'
-import { AppModule } from './app.module'
-import { PrismaExceptionFilter } from './prisma/filters/exception.filter'
-import { join } from 'path'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import { join } from 'path'
+import { PrismaExceptionFilter } from './prisma/filters/exception.filter'
+import { AppModule } from './app.module'
 
 async function bootstrap () {
   const logger = new Logger('Main')
 
-  // 1. Create the application with Express underlying platform
+  // Create the application with Express underlying platform
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
-  // 2. Enable CORS (Cross-Origin Resource Sharing)
-  // Crucial for allowing your Frontend (React/Next) to access this API
+  // Enable CORS (Cross-Origin Resource Sharing)
   app.enableCors({
     origin: '*', // In production, replace '*' with your frontend URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   })
 
-  // 3. Global Validation Pipe
-  // Automatically validates incoming requests against DTOs
+  // Global Validation Pipe, Automatically validates incoming requests against DTOs
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Strips away data that is not defined in the DTO
@@ -30,21 +28,19 @@ async function bootstrap () {
     }),
   )
 
-  // 4. Global Exception Filter for Prisma
-  // Catches database-specific errors and converts them to HTTP responses
+  // Global Exception Filter for Prisma, Catches database-specific errors and converts them to HTTP responses
   const { httpAdapter } = app.get(HttpAdapterHost)
   app.useGlobalFilters(new PrismaExceptionFilter(httpAdapter))
 
-  // 5. Serve Static Files (Avatars & Attachments)
-  // Makes the "uploads" folder accessible via URL
+  // Serve Static Files (Avatars & Attachments)
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   })
 
-  // 6. Global prefix for all routes
+  // Global prefix for all routes
   app.setGlobalPrefix('api')
 
-  // 7. Swagger API description
+  // Swagger API description
   const config = new DocumentBuilder()
     .setTitle('Bero Talker API')
     .setDescription('The Bero Talker Chat Application API description')
@@ -55,7 +51,7 @@ async function bootstrap () {
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('api/docs', app, document)
 
-  // 8. Start the Server
+  // Start the Server
   const port = process.env.PORT ?? 3001
   await app.listen(port)
 

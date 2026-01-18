@@ -42,7 +42,7 @@ src/
 ├── user/                 # User profile management and status tracking
 ├── conversation/         # Group & Direct chat management (Participants, Roles)
 ├── message/              # Message persistence, editing, and deletion logic
-├── mailer/               # Email service for notifications and password reset
+├── mail/               # Email service for notifications and password reset
 ├── prisma/               # Database connection and global Prisma service
 └── chat/                 # Real-time engine (WebSocket Gateway & Events)
     └── chat.gateway.ts   # The core Hub for all Socket.io interactions
@@ -119,7 +119,7 @@ Once the server is running, you can access the interactive Swagger documentation
 ### 📡 WebSocket Events
 
 ```
-EVENT	              DIRECTION	               DESCRIPTION
+EVENT	              DIRECTION	              DESCRIPTION
 __________________________________________________________________________________________________________________
 sendMessage	          Client ➡️ Server	      Sends a new message to a specific conversation.
 receiveMessage	      Server ️➡️ Client	      Broadcasts the saved message to all participants in the room.
@@ -137,6 +137,7 @@ userStatusChanged	  Server ➡️ Client	      System Event: Triggered automatic
 
 <img src="assets/images/swagger-docs.png" alt="Swagger Docs" width="75%">
 <img src="assets/images/postgresql-admin.png" alt="Postgresql Admin" width="75%">
+<img src="assets/images/vs-code.png" alt="VS Code" width="75%">
 
 ---
 
@@ -144,6 +145,6 @@ userStatusChanged	  Server ➡️ Client	      System Event: Triggered automatic
 This API powers the [Bero Talker Web App](/)
 
 > [!IMPORTANT]
-> **📺 The web application:** is currently under development and is expected to launch in the coming period
+> **📺 The web application:** is currently under development and is expected to launch in the coming period!
 
 ---
