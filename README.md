@@ -1,98 +1,149 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 💬 Bero Talker - Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The high-performance, real-time messaging engine for **Bero Talker**. Built with **NestJS**, this API provides a robust foundation for instant communication, secure authentication, and scalable data management.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 🚀 Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+-   **Real-time Communication:** Fully functional Chat Gateway using `Socket.io` for instant messaging.
+-   **Advanced Authentication:** Dual-token security system (Access & Refresh Tokens) with JWT and `Passport.js`.
+-   **Conversation Management:** Create group chats or direct messages, manage participants, and admin controls.
+-   **Live Features:**
+    -   Typing indicators (User is typing...).
+    -   Read receipts (Message status).
+    -   Online/Offline presence tracking.
+-   **Database Excellence:** Type-safe database queries using **Prisma ORM** with **PostgreSQL**.
+-   **Automated Documentation:** Fully documented API endpoints using **Swagger UI**.
+-   **Mailing System:** Integrated `Nodemailer` for password resets and notifications.
+-   **Security:** Password hashing with `bcrypt`, CORS enabled, and strict validation pipes.
 
-## Project setup
+---
 
-```bash
-$ yarn install
+## 🛠 Tech Stack
+
+-   **Framework:** [NestJS](https://nestjs.com/) (Node.js)
+-   **Real-time:** [Socket.io](https://socket.io/)
+-   **Database:** [PostgreSQL](https://www.postgresql.org/)
+-   **ORM:** [Prisma](https://www.prisma.io/)
+-   **Documentation:** [Swagger/OpenAPI](https://swagger.io/)
+-   **Security:** JWT, Passport, Bcrypt
+-   **Language:** TypeScript
+
+---
+
+## 📂 Project Structure
+
+The project follows the standard NestJS modular architecture, ensuring high maintainability and scalability:
+
+```
+src/
+├── auth/                 # Authentication logic (JWT, AT/RT Strategies, Guards)
+├── user/                 # User profile management and status tracking
+├── conversation/         # Group & Direct chat management (Participants, Roles)
+├── message/              # Message persistence, editing, and deletion logic
+├── mailer/               # Email service for notifications and password reset
+├── prisma/               # Database connection and global Prisma service
+└── chat/                 # Real-time engine (WebSocket Gateway & Events)
+    └── chat.gateway.ts   # The core Hub for all Socket.io interactions
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ yarn run start
+## 📋 Prerequisites
 
-# watch mode
-$ yarn run start:dev
+Before running the project, ensure you have:
+-   Node.js (v18 or higher)
+-   PostgreSQL database instance
+-   `npm` or `yarn`
 
-# production mode
-$ yarn run start:prod
+---
+
+## ⚙️ Installation & Setup
+
+1. **Clone the repository:**
+   
+   ```
+   git clone https://github.com/your-username/bero-talker-backend.git
+   cd bero-talker-backend
+   ```
+   
+3. **Install dependencies:**
+   
+   ```
+   yarn install
+   ```
+   
+5. **Environment Configuration: Create a .env file in the root directory and add your credentials:**
+   
+   ```
+   DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/bero_talker?schema=public"
+   
+   # Access token
+   JWT_SECRET="jwt-secret-123"
+   JWT_EXPIRY="15m"
+
+   # Refresh token
+   RT_SECRET="rt-secret-456"
+   RT_EXPIRY="7d"
+
+   # Email Service (Nodemailer)
+   MAIL_HOST="smtp.example.com"
+   MAIL_PORT=2525
+   MAIL_USER="your-email@example.com"
+   MAIL_PASS="your-password"
+   MAIL_FROM=support@berotalker.com
+   ```
+   
+7. **Database Migration:**
+   
+   ```
+   npx prisma migrate dev --name init
+   ```
+   
+9. **Start the server:**
+    
+   ```
+   # Development mode
+   yarn start:dev
+  
+   # Production mode
+   yarn start:prod
+   ```
+   
+---
+
+## 📖 API Documentation
+Once the server is running, you can access the interactive Swagger documentation at: ```http://localhost:3000/api/docs```
+
+### 📡 WebSocket Events
+
+```
+EVENT	              DIRECTION	               DESCRIPTION
+__________________________________________________________________________________________________________________
+sendMessage	          Client ➡️ Server	      Sends a new message to a specific conversation.
+receiveMessage	      Server ️➡️ Client	      Broadcasts the saved message to all participants in the room.
+typing	              Client ➡️ Server	      Informs others that the user is currently typing.
+messagesRead	      Client ➡️ Server	      Updates the read status for messages in a conversation.
+joinConversation	  Client ➡️ Server	      Validates membership and joins the specific room for real-time updates.
+editMessage	          Client ➡️ Server	      Updates an existing message and notifies participants.
+deleteMessage	      Client ➡️ Server	      Removes a message for all participants in real-time.
+userStatusChanged	  Server ➡️ Client	      System Event: Triggered automatically on connection/disconnection.
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ yarn run test
+## 📌 Screenshots
 
-# e2e tests
-$ yarn run test:e2e
+<img src="assets/images/swagger-docs.png" alt="Swagger Docs" width="75%">
+<img src="assets/images/postgresql-admin.png" alt="Postgresql Admin" width="75%">
 
-# test coverage
-$ yarn run test:cov
-```
+---
 
-## Deployment
+## 🔗 Related Project
+This API powers the [Bero Talker Web App](/)
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+> [!IMPORTANT]
+> **📺 The web application:** is currently under development and is expected to launch in the coming period
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
