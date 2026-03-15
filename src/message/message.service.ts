@@ -20,7 +20,14 @@ export class MessageService {
         content,
       },
       include: {
-        user: { select: { id: true, username: true, avatar: true } },
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayname: true,
+            avatar: true,
+          },
+        },
       },
     })
 
@@ -49,9 +56,17 @@ export class MessageService {
 
     const messages = await this.prisma.message.findMany({
       where: { conversationId },
-      orderBy: { createdAt: 'desc' },
+      // orderBy: { createdAt: 'desc' },
       include: {
-        user: { select: { id: true, username: true, avatar: true } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            displayname: true,
+            avatar: true,
+          },
+        },
       },
       take: limit,
       skip: skip,

@@ -28,11 +28,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly authService: AuthService,
   ) {}
 
-  // LIFECYCLE ------------------------------------------------------------------------------------
-
-  /**
-   * Handles user authentication and online status when a client connects.
-   */
   async handleConnection (client: Socket) {
     try {
       const token =
@@ -44,13 +39,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       const payload = await this.authService.verifyToken(token as string)
-      const userId = payload.id
+      const userId = payload.sub
 
       // Persist userId in socket session
       client.data.userId = userId
 
       // Join a private room for personal notifications (e.g., "user_notifications_5")
       await client.join(`user_notifications_${userId}`)
+
+      // Join a private room for direct messages (e.g., "user_5")
+      await client.join(`user_${userId}`)
 
       // Update user status to ONLINE in database
       const updatedUser = await this.userService.updateStatus(
@@ -59,8 +57,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       )
 
       // Notify all users that this user is now online
-      this.server.emit('userStatusChanged', updatedUser)
-
+      this.server.emit('userStatus', updatedUser)
       this.logger.log(`Authenticated: ${updatedUser.username} (ID: ${userId})`)
     } catch (error) {
       this.logger.error('Connection rejected: Handshake authentication failed.')
@@ -68,9 +65,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  /**
-   * Updates user status to offline when they disconnect.
-   */
   async handleDisconnect (client: Socket) {
     const userId = client.data.userId
 
@@ -79,16 +73,111 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         userId.toString(),
         false,
       )
-      this.server.emit('userStatusChanged', updatedUser)
+      this.server.emit('userStatus', updatedUser)
       this.logger.warn(`Disconnected: ${updatedUser.username}`)
     }
   }
 
-  // MESSAGING ------------------------------------------------------------------------------------
+  @SubscribeMessage('createConversation')
+  async handleCreateConversation (
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { conversation: any; receiverId: number },
+  ) {
+    const userId = client.data.userId
 
-  /**
-   * Handles sending, persisting, and broadcasting messages.
-   */
+    this.logger.log(
+      `💬 Creating conversation ${payload.conversation.id} (between [${userId},${payload.receiverId}])`,
+    )
+
+    const roomName = `conversation_${payload.conversation.id}`
+    await client.join(roomName)
+
+    this.logger.log(
+      `✅ User ${userId} joined room ${roomName} (new conversation)`,
+    )
+
+    // Send the new conversation to the receiver
+    this.server
+      .to(`user_notifications_${payload.receiverId}`)
+      .emit('newConversation', payload.conversation)
+
+    return { success: true }
+  }
+
+  @SubscribeMessage('createGroup')
+  async handleCreateGroup (
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { name: string; participants: number[] },
+  ) {
+    const adminId = client.data.userId
+
+    const allParticipants = [...new Set([adminId, ...payload.participants])]
+
+    const group = await this.conversationService.createGroupConversation(
+      payload.name,
+      adminId,
+      allParticipants,
+    )
+
+    this.logger.log(
+      `💬 Creating group ${group.id} (between [${allParticipants.toString()}])`,
+    )
+
+    console.log('✅ Group created:', group.id)
+
+    const roomName = `conversation_${group.id}`
+    await client.join(roomName)
+
+    this.logger.log(`✅ Creator ${adminId} joined room ${roomName} (new group)`)
+
+    // Send the new conversation to the receivers except the sender
+    allParticipants.forEach(participantId => {
+      if (participantId !== adminId) {
+        this.server
+          .to(`user_notifications_${participantId}`)
+          .emit('newGroup', group)
+      }
+    })
+
+    return group
+  }
+
+  @SubscribeMessage('joinConversation')
+  async handleJoinRoom (
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { conversationId: number },
+  ) {
+    const userId = client.data.userId
+
+    this.logger.log(
+      `💬 User ${userId} joining conversation ${payload.conversationId}`,
+    )
+
+    const isMember = await this.conversationService.isParticipant(
+      payload.conversationId,
+      userId,
+    )
+    if (!isMember) return { error: 'Unauthorized: Access denied to this room' }
+
+    const roomName = `conversation_${payload.conversationId}`
+    await client.join(roomName)
+
+    this.logger.log(`✅ User ${userId} joined room ${roomName}`)
+
+    const messages = await this.messageService.getMessagesByConversation(
+      payload.conversationId,
+    )
+
+    return messages.map(msg => ({
+      ...msg,
+      user: {
+        id: msg.userId,
+        username: msg.user.username,
+        avatar: msg.user.avatar,
+      },
+    }))
+  }
+
   @SubscribeMessage('sendMessage')
   async handleMessage (
     @ConnectedSocket() client: Socket,
@@ -96,6 +185,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     payload: { conversationId: number; text: string; receiverId?: number },
   ) {
     const senderId = client.data.userId
+
+    console.log('📨 Sending message:', payload)
 
     // Security: Verify if sender belongs to the conversation
     const isMember = await this.conversationService.isParticipant(
@@ -116,10 +207,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Broadcast message to everyone in the conversation room
     const roomName = `conversation_${payload.conversationId}`
+    console.log(`📢 Broadcasting to room: ${roomName}`)
     this.server.to(roomName).emit('receiveMessage', savedMessage)
+    // client.broadcast.to(roomName).emit('receiveMessage', savedMessage)
 
     // Send real-time notification to the receiver if provided
     if (payload.receiverId) {
+      console.log(`🔔 Sending notification to user_${payload.receiverId}`)
       this.server
         .to(`user_notifications_${payload.receiverId}`)
         .emit('newNotification', {
@@ -132,33 +226,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return savedMessage
   }
 
-  // ACTIONS --------------------------------------------------------------------------------------
-
-  /**
-   * Join Room: Allows a user to join a specific conversation room after validation.
-   */
-  @SubscribeMessage('joinConversation')
-  async handleJoinRoom (
-    @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { conversationId: number },
-  ) {
-    const userId = client.data.userId
-
-    const isMember = await this.conversationService.isParticipant(
-      payload.conversationId,
-      userId,
-    )
-    if (!isMember) return { error: 'Unauthorized: Access denied to this room' }
-
-    client.join(`conversation_${payload.conversationId}`)
-
-    // Return chat history for the joined room
-    return this.messageService.getMessagesByConversation(payload.conversationId)
-  }
-
-  /**
-   * Read Receipts: Notifies others when messages in a conversation have been read.
-   */
   @SubscribeMessage('messagesRead')
   async handleMessagesRead (
     @ConnectedSocket() client: Socket,
@@ -176,9 +243,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     })
   }
 
-  /**
-   * Typing Indicator: Broadcasts typing status to other participants in the room.
-   */
   @SubscribeMessage('typing')
   handleTyping (
     @ConnectedSocket() client: Socket,
@@ -187,16 +251,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const roomName = `conversation_${payload.conversationId}`
     client.broadcast.to(roomName).emit('userTyping', {
+      conversationId: payload.conversationId,
       userName: payload.userName,
       isTyping: payload.isTyping,
     })
   }
 
-  // MESSAGE MANAGEMENT ---------------------------------------------------------------------------
-
-  /**
-   * Edit: Handles real-time updates for message modifications.
-   */
   @SubscribeMessage('editMessage')
   async handleEditMessage (
     @ConnectedSocket() client: Socket,
@@ -212,17 +272,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server
       .to(`conversation_${payload.conversationId}`)
-      .emit('messageUpdated', {
+      .emit('updateMessage', {
         messageId: payload.messageId,
         newText: payload.text,
+        conversationId: payload.conversationId,
       })
 
     return updatedMessage
   }
 
-  /**
-   * Delete: Handles real-time removal of messages and notifies all participants.
-   */
   @SubscribeMessage('deleteMessage')
   async handleDeleteMessage (
     @ConnectedSocket() client: Socket,
@@ -233,11 +291,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Perform soft/hard delete in database
     await this.messageService.deleteMessage(payload.messageId, userId)
 
-    // Notify all users in the conversation room to remove the message from their UI
     this.server
       .to(`conversation_${payload.conversationId}`)
-      .emit('messageDeleted', {
+      .emit('deleteMessage', {
         messageId: payload.messageId,
+        conversationId: payload.conversationId,
       })
 
     return { success: true }

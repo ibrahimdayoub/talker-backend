@@ -66,11 +66,12 @@ export class AuthController {
    * 3. Validates the incoming RT and issues a new pair
    */
   @UseGuards(RtGuard)
-  @Post('refresh-tokens')
+  @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: '(Validates the incoming RT and issues a new pair (AT, RT))',
-    description: 'Exchange a valid Refresh Token for a new pair of Access and Refresh tokens. This process invalidates the old Refresh Token for security (Rotation).',
+    description:
+      'Exchange a valid Refresh Token for a new pair of Access and Refresh tokens. This process invalidates the old Refresh Token for security (Rotation).',
   })
   @ApiBearerAuth()
   @ApiOkResponse({ description: 'New pair of tokens issued successfully.' })

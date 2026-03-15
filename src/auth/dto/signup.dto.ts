@@ -9,11 +9,16 @@ import {
 
 export class SignupDto {
   @ApiProperty({
-    example: 'berouser',
+    example: 'bero-talker',
     description: 'The unique username of the user',
   })
   @IsNotEmpty()
   @IsString()
+  @MinLength(3)
+  @Matches(/^[a-z0-9_-]+$/, {
+    message:
+      'Username can only contain small letters, numbers, hyphens, and underscores',
+  })
   username: string
 
   @ApiProperty({

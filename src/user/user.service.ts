@@ -13,7 +13,38 @@ export class UserService {
   constructor (private prisma: PrismaService) {}
 
   /**
-   * 1. Get User Profile (Handles both "me" and specific user IDs with conditional privacy logic)
+   * 1. Search Users (Find users by username, email, or displayname while excluding the current user)
+   */
+  async searchUsers (query: string, currentUserId: number) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
+          { displayname: { contains: query, mode: 'insensitive' } },
+        ],
+        NOT: { id: currentUserId },
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        displayname: true,
+        avatar: true,
+        bio: true,
+        isOnline: true,
+      },
+      // take: 25,
+    })
+
+    return {
+      data: users,
+      message: 'Users fetched successfully',
+    }
+  }
+
+  /**
+   * 2. Get User Profile (Handles both "me" and specific user IDs with conditional privacy logic)
    */
   async getUser (currentUserId: number, identifier: string) {
     const targetId = identifier === 'me' ? currentUserId : Number(identifier)
@@ -26,8 +57,9 @@ export class UserService {
       where: { id: targetId },
       select: {
         id: true,
-        username: true,
         email: true,
+        username: true,
+        displayname: true,
         avatar: true,
         bio: true,
         isOnline: true,
@@ -41,7 +73,9 @@ export class UserService {
     const isMe = user.id === currentUserId
 
     // Hide email from public view, only show if it's the current user's own profile
-    const { email, ...publicData } = user
+    // const { email, ...publicData } = user
+
+    const { ...publicData } = user
 
     return {
       data: {
@@ -50,29 +84,6 @@ export class UserService {
       },
       message: 'Profile fetched successfully',
     }
-  }
-
-  /**
-   * 2. Search Users (Find users by username or email while excluding the current user)
-   */
-  async searchUsers (query: string, currentUserId: number) {
-    return this.prisma.user.findMany({
-      where: {
-        OR: [
-          { username: { contains: query, mode: 'insensitive' } },
-          { email: { contains: query, mode: 'insensitive' } },
-        ],
-        NOT: { id: currentUserId },
-      },
-      select: {
-        id: true,
-        username: true,
-        avatar: true,
-        bio: true,
-        isOnline: true,
-      },
-      take: 10,
-    })
   }
 
   /**

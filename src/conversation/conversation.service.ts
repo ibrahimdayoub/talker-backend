@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
@@ -35,6 +36,7 @@ export class ConversationService {
               select: {
                 id: true,
                 username: true,
+                displayname: true,
                 avatar: true,
                 isOnline: true,
               },
@@ -60,6 +62,7 @@ export class ConversationService {
               select: {
                 id: true,
                 username: true,
+                displayname: true,
                 avatar: true,
                 isOnline: true,
               },
@@ -99,6 +102,33 @@ export class ConversationService {
           ],
         },
       },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayname: true,
+                avatar: true,
+                isOnline: true,
+              },
+            },
+          },
+        },
+        lastMessage: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayname: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
     })
   }
 
@@ -107,7 +137,9 @@ export class ConversationService {
    */
   async getUserConversations (userId: number) {
     return this.prisma.conversation.findMany({
-      where: { participants: { some: { userId } } },
+      where: {
+        participants: { some: { userId } },
+      },
       include: {
         participants: {
           where: { userId: { not: userId } },
@@ -116,18 +148,29 @@ export class ConversationService {
               select: {
                 id: true,
                 username: true,
+                displayname: true,
                 avatar: true,
                 isOnline: true,
               },
             },
           },
         },
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
+        lastMessage: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayname: true,
+                avatar: true,
+              },
+            },
+          },
         },
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: {
+        updatedAt: 'desc',
+      },
     })
   }
 
@@ -145,9 +188,12 @@ export class ConversationService {
             user: {
               select: {
                 id: true,
+                email: true,
                 username: true,
+                displayname: true,
                 avatar: true,
                 isOnline: true,
+                lastSeen:true
               },
             },
           },

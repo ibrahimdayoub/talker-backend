@@ -34,8 +34,18 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, salt)
 
     // Prisma unique constraint will handle duplicate emails automatically via Global Filter
+
+    const formattedDisplayName = dto.username
+      .replace(/[0-9]/g, '')
+      .replace(/[_-]/g, ' ')
+      .trim()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+
     const user = await this.prisma.user.create({
       data: {
+        displayname: formattedDisplayName,
         email: dto.email,
         username: dto.username,
         password: hashedPassword,
@@ -65,7 +75,8 @@ export class AuthService {
     const tokens = await this.getTokens(user.id, user.email)
     await this.updateRtHash(user.id, tokens.refreshToken)
 
-    return tokens
+    const { password, hashedRt, ...userWithoutPassword } = user
+    return { ...userWithoutPassword, ...tokens }
   }
 
   /**

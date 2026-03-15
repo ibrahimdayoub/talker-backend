@@ -4,6 +4,7 @@ CREATE TYPE "MessageType" AS ENUM ('TEXT', 'IMAGE', 'FILE', 'AUDIO');
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
+    "displayname" TEXT,
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,

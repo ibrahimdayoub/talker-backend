@@ -29,18 +29,7 @@ export class UserController {
   constructor (private readonly userService: UserService) {}
 
   /**
-   * 1. Get User Profile (Handles both "me" and specific user IDs with conditional privacy logic)
-   */
-  @Get(':identifier')
-  async getUser (
-    @GetUser('id') currentUserId: number,
-    @Param('identifier') identifier: string,
-  ) {
-    return this.userService.getUser(currentUserId, identifier)
-  }
-
-  /**
-   * 2. Search Users (Find users by username or email while excluding the current user)
+   * 1. Search Users (Find users by username or email while excluding the current user)
    */
   @Get('search')
   async search (
@@ -48,6 +37,17 @@ export class UserController {
     @GetUser('id') currentUserId: number,
   ) {
     return this.userService.searchUsers(query, currentUserId)
+  }
+
+  /**
+   * 2. Get User Profile (Handles both "me" and specific user IDs with conditional privacy logic)
+   */
+  @Get(':identifier')
+  async getUser (
+    @GetUser('id') currentUserId: number,
+    @Param('identifier') identifier: string,
+  ) {
+    return this.userService.getUser(currentUserId, identifier)
   }
 
   /**

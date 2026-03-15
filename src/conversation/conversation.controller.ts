@@ -10,11 +10,11 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth } from '@nestjs/swagger'
 import { GetUser } from '../utils/get-user.decorator'
-import { JwtStrategy } from '../security/jwt.strategy'
+import { JwtGuard } from 'src/security/jwt.guard'
 import { ConversationService } from './conversation.service'
 
 @ApiBearerAuth()
-@UseGuards(JwtStrategy)
+@UseGuards(JwtGuard)
 @Controller('conversations')
 export class ConversationController {
   constructor (private readonly conversationService: ConversationService) {}

@@ -14,7 +14,7 @@ async function bootstrap () {
 
   // Enable CORS (Cross-Origin Resource Sharing)
   app.enableCors({
-    origin: '*', // In production, replace '*' with your frontend URL
+    origin: process.env.FRONT_URL, // In production, replace '*' with your frontend URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   })
@@ -33,7 +33,7 @@ async function bootstrap () {
   app.useGlobalFilters(new PrismaExceptionFilter(httpAdapter))
 
   // Serve Static Files (Avatars & Attachments)
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   })
 
@@ -52,12 +52,12 @@ async function bootstrap () {
   SwaggerModule.setup('api/docs', app, document)
 
   // Start the Server
-  const port = process.env.PORT ?? 3001
+  const port = process.env.PORT ?? 5001
   await app.listen(port)
 
   logger.log(`🚀 Bero Talker Server: http://localhost:${port}/api`)
   logger.log(`📝 Bero Talker Docs: http://localhost:${port}/api/docs`)
-  logger.log(`📂 Static Assets: http://localhost:${port}/api/uploads/`)
+  logger.log(`📂 Static Assets: http://localhost:${port}/uploads/`)
 }
 
 bootstrap()

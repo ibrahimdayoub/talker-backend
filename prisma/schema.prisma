@@ -16,6 +16,7 @@ enum MessageType {
 
 model User {
   id           Int              @id @default(autoincrement())
+  displayname  String?
   username     String           @unique
   email        String           @unique
   password     String
@@ -51,7 +52,7 @@ model Conversation {
   name          String?
   isGroup       Boolean        @default(false)
 
-  lastMessageId Int?           @unique // ID لآخر رسالة
+  lastMessageId Int?           @unique
   lastMessage   Message?      @relation("LastMessage", fields: [lastMessageId], references: [id])
 
   createdAt     DateTime       @default(now())
@@ -83,8 +84,8 @@ model Message {
   id                 Int            @id @default(autoincrement())
   content            String
   isDeleted          Boolean        @default(false)
-  type               MessageType    @default(TEXT) // To support images/files later
-  isRead             Boolean        @default(false) // For read receipts
+  type               MessageType    @default(TEXT)
+  isRead             Boolean        @default(false)
 
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
