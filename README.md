@@ -142,7 +142,7 @@ userStatusChanged	  Server ➡️ Client	      System Event: Triggered automatic
 ---
 
 ## 🔗 Related Project
-This API powers the [Bero Talker Web App](/)
+This API powers the [Bero Talker Web App](https://youtu.be/0uMAMAAqQWg)
 
 > [!IMPORTANT]
 > **📺 The web application:** is currently under development and is expected to launch in the coming period!
