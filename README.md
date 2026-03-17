@@ -64,8 +64,8 @@ Before running the project, ensure you have:
 1. **Clone the repository:**
    
    ```
-   git clone https://github.com/your-username/bero-talker-backend.git
-   cd bero-talker-backend
+   git clone https://github.com/ibrahimdayoub/talker-backend.git
+   cd talker-backend
    ```
    
 3. **Install dependencies:**
@@ -142,9 +142,6 @@ userStatusChanged	  Server ➡️ Client	      System Event: Triggered automatic
 ---
 
 ## 🔗 Related Project
-This API powers the [Bero Talker Web App](https://youtu.be/0uMAMAAqQWg)
-
-> [!IMPORTANT]
-> **📺 The web application:** is currently under development and is expected to launch in the coming period!
+This API powers the [Bero Talker Web App](https://github.com/ibrahimdayoub/talker-frontend)
 
 ---
